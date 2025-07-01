@@ -18,7 +18,6 @@ from app.utils.helpers import (
     generate_download_token, verify_download_token, format_file_size
 )
 from app.storage.local import LocalStorage
-from app.storage.s3 import S3Storage
 from app.storage.azure import AzureStorage
 from app.tasks.virus_scan import scan_file_for_viruses
 
@@ -44,9 +43,7 @@ app.add_middleware(
 redis_client = redis.Redis.from_url(settings.redis_url, decode_responses=True)
 
 # Initialize storage
-if settings.storage_type == "s3":
-    storage = S3Storage()
-elif settings.storage_type == "azure":
+if settings.storage_type == "azure":
     storage = AzureStorage()
 else:
     storage = LocalStorage()
@@ -374,8 +371,8 @@ async def download_file(token: str):
         )
     
     try:
-        if settings.storage_type in ["s3", "azure"]:
-            # For S3 or Azure, generate a presigned URL
+        if settings.storage_type == "azure":
+            # For Azure, generate a presigned URL
             download_url = storage.generate_presigned_url(
                 file_id, 
                 metadata["filename"], 

@@ -6,7 +6,7 @@ A production-ready file upload service with asynchronous virus scanning using Cl
 
 ✅ **Secure File Upload** - Upload files via REST API with validation  
 ✅ **Asynchronous Virus Scanning** - Uses ClamAV for malware detection  
-✅ **Flexible Storage** - Supports both local filesystem and AWS S3  
+✅ **Flexible Storage** - Supports both local filesystem and Azure Blob Storage  
 ✅ **Secure Downloads** - Time-limited download links with JWT tokens  
 ✅ **File Management** - Complete CRUD operations for files  
 ✅ **Real-time Status** - Track upload and scan progress  
@@ -18,7 +18,7 @@ A production-ready file upload service with asynchronous virus scanning using Cl
 - **Celery** - Distributed task queue for async processing
 - **Redis** - Message broker and metadata storage
 - **ClamAV** - Open-source antivirus engine
-- **AWS S3** - Cloud storage (optional)
+- **Azure Blob Storage** - Cloud storage (optional)
 - **Docker** - Containerization and deployment
 
 ## Quick Start
@@ -165,27 +165,13 @@ curl "http://localhost:8000/download/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `STORAGE_TYPE` | Storage backend: `local`, `s3`, or `azure` | `local` |
+| `STORAGE_TYPE` | Storage backend: `local` or `azure` | `local` |
 | `MAX_FILE_SIZE` | Maximum file size in bytes | `104857600` (100MB) |
 | `ALLOWED_EXTENSIONS` | Comma-separated file extensions | See config.py |
 | `VIRUS_SCAN_TIMEOUT` | Max scan time in seconds | `300` |
 | `DOWNLOAD_LINK_EXPIRE_HOURS` | Download link validity | `24` |
 
-### Cloud Storage Configuration
-
-#### AWS S3 Configuration
-
-For S3 storage, set these environment variables:
-
-```bash
-STORAGE_TYPE=s3
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=your-bucket-name
-```
-
-#### Azure Blob Storage Configuration
+### Azure Blob Storage Configuration
 
 For Azure Blob Storage, set these environment variables:
 
@@ -266,7 +252,7 @@ find ./uploads -type f -mtime +7 -delete
 
 - **Horizontal**: Add more worker containers
 - **Vertical**: Increase worker concurrency
-- **Storage**: Use S3 or Azure Blob Storage for unlimited capacity
+- **Storage**: Use Azure Blob Storage for unlimited capacity
 - **Database**: Consider PostgreSQL for metadata if needed
 
 ## Troubleshooting

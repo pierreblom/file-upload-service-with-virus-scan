@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     clamav_timeout: int = 60
     
     # Storage Configuration
-    storage_type: Literal["local", "s3", "azure"] = "local"
+    storage_type: Literal["local", "azure"] = "local"
     local_storage_path: str = "./uploads"
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     allowed_extensions: set = {
@@ -34,12 +34,6 @@ class Settings(BaseSettings):
         ".ppt", ".pptx", ".jpg", ".jpeg", ".png", ".gif", 
         ".zip", ".rar", ".tar", ".gz"
     }
-    
-    # S3 Configuration (if using S3)
-    aws_access_key_id: Optional[str] = None
-    aws_secret_access_key: Optional[str] = None
-    aws_region: str = "us-east-1"
-    s3_bucket_name: str = "file-upload-service"
     
     # Azure Blob Storage Configuration (if using Azure)
     azure_storage_account_name: Optional[str] = None

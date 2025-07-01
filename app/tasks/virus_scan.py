@@ -9,7 +9,6 @@ from celery import Celery
 from app.config import settings
 from app.models import ScanStatus, VirusScanResult
 from app.storage.local import LocalStorage
-from app.storage.s3 import S3Storage
 from app.storage.azure import AzureStorage
 
 # Initialize Celery app
@@ -35,9 +34,7 @@ celery_app.conf.update(
 )
 
 # Initialize storage
-if settings.storage_type == "s3":
-    storage = S3Storage()
-elif settings.storage_type == "azure":
+if settings.storage_type == "azure":
     storage = AzureStorage()
 else:
     storage = LocalStorage()
@@ -128,11 +125,11 @@ def scan_file_for_viruses(self, file_id: str, filename: str, file_info: Dict[str
         )
         
         # Get file path for scanning
-        if settings.storage_type in ["s3", "azure"]:
-            # Download file from cloud storage to temporary location
+        if settings.storage_type == "azure":
+            # Download file from Azure to temporary location
             temp_file_path = storage.download_file_to_temp(file_id, filename)
             if not temp_file_path:
-                raise Exception(f"Failed to download file from {settings.storage_type.upper()} for scanning")
+                raise Exception("Failed to download file from Azure for scanning")
             file_path = temp_file_path
         else:
             # Use local file path

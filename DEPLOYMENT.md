@@ -36,17 +36,11 @@ CLAMAV_HOST=clamav
 CLAMAV_PORT=3310
 CLAMAV_TIMEOUT=120
 
-# Storage Configuration - Use S3 or Azure for production
-STORAGE_TYPE=azure  # or s3
+# Storage Configuration - Use Azure for production
+STORAGE_TYPE=azure
 MAX_FILE_SIZE=524288000  # 500MB
 
-# S3 Configuration (if using S3)
-# AWS_ACCESS_KEY_ID=your_production_access_key
-# AWS_SECRET_ACCESS_KEY=your_production_secret_key
-# AWS_REGION=us-east-1
-# S3_BUCKET_NAME=your-production-bucket
-
-# Azure Configuration (if using Azure)
+# Azure Configuration
 AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=yourprodaccount;AccountKey=yourprodkey;EndpointSuffix=core.windows.net
 AZURE_CONTAINER_NAME=your-production-container
 
@@ -238,17 +232,8 @@ docker exec upload_service_redis redis-cli BGSAVE
 docker cp upload_service_redis:/data/dump.rdb ./backups/
 ```
 
-#### B. Cloud Storage Backup
+#### B. Azure Blob Storage Backup
 
-**For S3:**
-```bash
-# S3 Cross-region replication or backup to Glacier
-aws s3api put-bucket-replication \
-  --bucket your-production-bucket \
-  --replication-configuration file://replication.json
-```
-
-**For Azure Blob Storage:**
 ```bash
 # Enable soft delete and versioning
 az storage account blob-service-properties update \
@@ -373,10 +358,7 @@ curl -w "@curl-format.txt" -o /dev/null -s "https://your-domain.com/health"
 # Test Redis backup restore
 docker run --rm -v redis_data:/data redis:7-alpine redis-server --dir /data --dbfilename dump.rdb
 
-# Test cloud storage access
-# For S3:
-aws s3 ls s3://your-production-bucket/
-# For Azure:
+# Test Azure storage access
 az storage blob list --account-name your-storage-account --container-name your-container
 ```
 
@@ -396,7 +378,7 @@ docker-compose restart redis
 - [ ] Changed default SECRET_KEY
 - [ ] Using HTTPS with valid SSL certificate
 - [ ] Redis protected with password
-- [ ] Cloud storage (S3/Azure) with proper access policies
+- [ ] Azure Blob Storage with proper access policies
 - [ ] Regular security updates applied
 - [ ] File size and type restrictions configured
 - [ ] Rate limiting implemented (via nginx/proxy)
