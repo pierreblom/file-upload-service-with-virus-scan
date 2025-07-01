@@ -19,6 +19,7 @@ from app.utils.helpers import (
 )
 from app.storage.local import LocalStorage
 from app.storage.s3 import S3Storage
+from app.storage.azure import AzureStorage
 from app.tasks.virus_scan import scan_file_for_viruses
 
 # Initialize FastAPI app
@@ -45,6 +46,8 @@ redis_client = redis.Redis.from_url(settings.redis_url, decode_responses=True)
 # Initialize storage
 if settings.storage_type == "s3":
     storage = S3Storage()
+elif settings.storage_type == "azure":
+    storage = AzureStorage()
 else:
     storage = LocalStorage()
 
@@ -371,8 +374,8 @@ async def download_file(token: str):
         )
     
     try:
-        if settings.storage_type == "s3":
-            # For S3, generate a presigned URL
+        if settings.storage_type in ["s3", "azure"]:
+            # For S3 or Azure, generate a presigned URL
             download_url = storage.generate_presigned_url(
                 file_id, 
                 metadata["filename"], 
@@ -389,7 +392,7 @@ async def download_file(token: str):
             metadata["last_downloaded"] = datetime.utcnow().isoformat()
             save_file_metadata(file_id, metadata)
             
-            # Redirect to S3 presigned URL
+            # Redirect to presigned URL
             return JSONResponse(
                 content={"download_url": download_url},
                 status_code=status.HTTP_302_FOUND

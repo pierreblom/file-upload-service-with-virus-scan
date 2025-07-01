@@ -1,0 +1,23 @@
+version: '3.8'
+
+# Docker Compose override for Azure Blob Storage
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.azure.yml up -d
+
+services:
+  app:
+    environment:
+      - STORAGE_TYPE=azure
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}
+      - AZURE_CONTAINER_NAME=${AZURE_CONTAINER_NAME:-file-upload-service}
+
+  worker:
+    environment:
+      - STORAGE_TYPE=azure
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}
+      - AZURE_CONTAINER_NAME=${AZURE_CONTAINER_NAME:-file-upload-service}
+
+  beat:
+    environment:
+      - STORAGE_TYPE=azure
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}
+      - AZURE_CONTAINER_NAME=${AZURE_CONTAINER_NAME:-file-upload-service} 

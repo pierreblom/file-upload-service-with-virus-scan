@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     clamav_timeout: int = 60
     
     # Storage Configuration
-    storage_type: Literal["local", "s3"] = "local"
+    storage_type: Literal["local", "s3", "azure"] = "local"
     local_storage_path: str = "./uploads"
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     allowed_extensions: set = {
@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     aws_secret_access_key: Optional[str] = None
     aws_region: str = "us-east-1"
     s3_bucket_name: str = "file-upload-service"
+    
+    # Azure Blob Storage Configuration (if using Azure)
+    azure_storage_account_name: Optional[str] = None
+    azure_storage_account_key: Optional[str] = None
+    azure_storage_connection_string: Optional[str] = None
+    azure_container_name: str = "file-upload-service"
     
     # Security Configuration
     secret_key: str = "your-secret-key-change-this-in-production"

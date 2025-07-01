@@ -165,13 +165,15 @@ curl "http://localhost:8000/download/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `STORAGE_TYPE` | Storage backend: `local` or `s3` | `local` |
+| `STORAGE_TYPE` | Storage backend: `local`, `s3`, or `azure` | `local` |
 | `MAX_FILE_SIZE` | Maximum file size in bytes | `104857600` (100MB) |
 | `ALLOWED_EXTENSIONS` | Comma-separated file extensions | See config.py |
 | `VIRUS_SCAN_TIMEOUT` | Max scan time in seconds | `300` |
 | `DOWNLOAD_LINK_EXPIRE_HOURS` | Download link validity | `24` |
 
-### AWS S3 Configuration
+### Cloud Storage Configuration
+
+#### AWS S3 Configuration
 
 For S3 storage, set these environment variables:
 
@@ -181,6 +183,21 @@ AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=your-bucket-name
+```
+
+#### Azure Blob Storage Configuration
+
+For Azure Blob Storage, set these environment variables:
+
+```bash
+STORAGE_TYPE=azure
+# Option 1: Connection string (recommended)
+AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=youraccountname;AccountKey=youraccountkey;EndpointSuffix=core.windows.net
+AZURE_CONTAINER_NAME=your-container-name
+
+# Option 2: Account name and key separately
+# AZURE_STORAGE_ACCOUNT_NAME=your_storage_account_name
+# AZURE_STORAGE_ACCOUNT_KEY=your_storage_account_key
 ```
 
 ## Deployment
@@ -249,7 +266,7 @@ find ./uploads -type f -mtime +7 -delete
 
 - **Horizontal**: Add more worker containers
 - **Vertical**: Increase worker concurrency
-- **Storage**: Use S3 for unlimited capacity
+- **Storage**: Use S3 or Azure Blob Storage for unlimited capacity
 - **Database**: Consider PostgreSQL for metadata if needed
 
 ## Troubleshooting
