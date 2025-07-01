@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Redis for task queue and metadata storage
+  redis:
+    image: redis:7-alpine
+    container_name: upload_service_redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # ClamAV virus scanner
+  clamav:
+    image: clamav/clamav:stable
+    container_name: upload_service_clamav
+    ports:
+      - "3310:3310"
+    volumes:
+      - clamav_db:/var/lib/clamav
+    environment:
+      - CLAMAV_NO_FRESHCLAMD=false
+      - CLAMAV_NO_CLAMD=false
+      - CLAMAV_NO_MILTERD=true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "clamdscan", "--ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Main FastAPI application
+  app:
+    build: .
+    container_name: upload_service_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+      - LOCAL_STORAGE_PATH=/app/uploads
+    depends_on:
+      redis:
+        condition: service_started
+      clamav:
+        condition: service_healthy
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  # Celery worker for virus scanning
+  worker:
+    build: .
+    container_name: upload_service_worker
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+      - LOCAL_STORAGE_PATH=/app/uploads
+    depends_on:
+      redis:
+        condition: service_started
+      clamav:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery -A app.tasks.virus_scan worker --loglevel=info --concurrency=2
+
+  # Celery beat scheduler (optional - for periodic tasks)
+  beat:
+    build: .
+    container_name: upload_service_beat
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+      - LOCAL_STORAGE_PATH=/app/uploads
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    command: celery -A app.tasks.virus_scan beat --loglevel=info
+
+  # Flower for monitoring Celery tasks (optional)
+  flower:
+    build: .
+    container_name: upload_service_flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+    command: celery -A app.tasks.virus_scan flower --port=5555
+
+volumes:
+  redis_data:
+  clamav_db: 
